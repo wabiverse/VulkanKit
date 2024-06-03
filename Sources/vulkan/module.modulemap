@@ -1,0 +1,5 @@
+module vulkan [system] {
+    header "vulkan.h"
+    link "vulkan"
+    export *
+}
