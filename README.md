@@ -60,6 +60,9 @@ let package = Package(
       dependencies: [
         // add the VulkanKit product as a target dependency.
         .product(name: "VulkanKit", package: "VulkanKit")
+      ],
+      swiftSettings: [
+        .interoperabilityMode(.Cxx)
       ]
     )
   ]
