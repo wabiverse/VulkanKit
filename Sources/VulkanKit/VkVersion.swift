@@ -28,13 +28,31 @@
  *  . x x x . o o o . x x x . : : : .    o  x  o    . : : : .
  * ---------------------------------------------------------------- */
 
-import VulkanKit
+import Foundation
+import vulkan
 
-@main
-final class VulkanKitDemo
+public extension Vulkan
 {
-  static func main()
+  enum Version
   {
-    print("Vulkan Instance Version: \(Vulkan.Version.description)")
+    case major
+    case minor
+    case patch
+
+    public var rawValue: UInt32
+    {
+      _ = Vulkan.shared.getVersion(&Vulkan.shared.fullVersion)
+      switch self
+      {
+        case .major: return vkApiVersionMajor(Vulkan.shared.fullVersion)
+        case .minor: return vkApiVersionMinor(Vulkan.shared.fullVersion)
+        case .patch: return vkApiVersionPatch(Vulkan.shared.fullVersion)
+      }
+    }
+
+    public static var description: String
+    {
+      "\(Version.major.rawValue).\(Version.minor.rawValue).\(Version.patch.rawValue)"
+    }
   }
 }

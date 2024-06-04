@@ -28,15 +28,11 @@
  *  . x x x . o o o . x x x . : : : .    o  x  o    . : : : .
  * ---------------------------------------------------------------- */
 
+import Foundation
 import vulkan
 
 public class Vulkan
 {
-  /**
-   * Singleton instance of the Vulkan class.
-   */
-  public static var shared: Vulkan = .init()
-
   /**
    * Private initializer for the Vulkan class.
    */
@@ -44,20 +40,20 @@ public class Vulkan
   {}
 
   /**
-   * Get the Vulkan instance version, using the vulkan api.
+   * Singleton instance of the Vulkan class.
    */
-  var v: PFN_vkEnumerateInstanceVersion = { res in
-    vkGetInstanceProcAddr(nil, "vkEnumerateInstanceVersion")
-    return vkEnumerateInstanceVersion(res)
-  }
+  public static var shared: Vulkan = .init()
 
   /**
-   * Returns the Vulkan instance version as a string.
+   * the integral value of the vulkan version.
    */
-  public var version: String
-  {
-    var fullVersion: UInt32 = vkApiVersion1_0()
-    _ = v(&fullVersion)
-    return "\(vkApiVersionMajor(fullVersion)).\(vkApiVersionMinor(fullVersion)).\(vkApiVersionPatch(fullVersion))"
+  var fullVersion: UInt32 = 0
+
+  /**
+   * Get the Vulkan instance version, using the vulkan api.
+   */
+  var getVersion: PFN_vkEnumerateInstanceVersion = { res in
+    vkGetInstanceProcAddr(nil, "vkEnumerateInstanceVersion")
+    return vkEnumerateInstanceVersion(res)
   }
 }
