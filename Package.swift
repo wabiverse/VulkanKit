@@ -1,4 +1,4 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 5.6
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -22,9 +22,6 @@ let package = Package(
       name: "VulkanKit",
       dependencies: [
         .target(name: "vulkan")
-      ],
-      swiftSettings: [
-        .interoperabilityMode(.Cxx)
       ]
     ),
     .systemLibrary(
@@ -40,9 +37,6 @@ let package = Package(
       name: "VulkanKitDemo",
       dependencies: [
         .target(name: "VulkanKit")
-      ],
-      swiftSettings: [
-        .interoperabilityMode(.Cxx)
       ]
     ),
   ]
