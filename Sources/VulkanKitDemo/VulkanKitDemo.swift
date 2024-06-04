@@ -35,6 +35,10 @@ final class VulkanKitDemo
 {
   static func main()
   {
-    print("Vulkan Instance Version: \(Vulkan.Version.description)")
+    print("major:", Vulkan.Version.major.rawValue)
+    print("minor:", Vulkan.Version.minor.rawValue)
+    print("patch:", Vulkan.Version.patch.rawValue)
+
+    print("Vulkan Instance Version:", Vulkan.Version.description)
   }
 }

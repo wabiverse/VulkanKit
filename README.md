@@ -23,22 +23,23 @@
   <p align="center">Documented Swift API</p>
 </h3>
 
-
 ```swift
 import VulkanKit
 
-print("Vulkan Instance Version: \(Vulkan.shared.version)")
+print("major:", Vulkan.Version.major.rawValue) // major: 1
+print("minor:", Vulkan.Version.minor.rawValue) // minor: 3
+print("patch:", Vulkan.Version.patch.rawValue) // patch: 283
+
+print("Vulkan Instance Version:", Vulkan.Version.description)
 // Vulkan Instance Version: 1.3.283
 ```
-
 
 <h3 align="center">
   <p align="center">Using VulkanKit</p>
 </h3>
 
-
 ```swift
-// swift-tools-version:5.10
+// swift-tools-version:5.6
 import PackageDescription
 
 let package = Package(
@@ -59,9 +60,6 @@ let package = Package(
       dependencies: [
         // add the VulkanKit product as a target dependency.
         .product(name: "VulkanKit", package: "VulkanKit")
-      ],
-      swiftSettings: [
-        .interoperabilityMode(.Cxx)
       ]
     )
   ]
