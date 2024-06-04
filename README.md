@@ -39,7 +39,7 @@ print("Vulkan Instance Version:", Vulkan.Version.description)
 </h3>
 
 ```swift
-// swift-tools-version:5.6
+// swift-tools-version:5.10
 import PackageDescription
 
 let package = Package(
