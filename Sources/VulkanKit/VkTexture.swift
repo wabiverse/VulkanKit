@@ -95,7 +95,7 @@ public extension Vulkan
       decriptor.imageLayout = imageLayout
     }
 
-    public func loadKTXFile(filename: String, target: inout UnsafeMutablePointer<ktxTexture>?) -> ktxResult
+    public func loadKTXFile(atPath filename: String, target: inout UnsafeMutablePointer<ktxTexture>?) -> ktxResult
     {
       var result: ktxResult = KTX_SUCCESS
 
