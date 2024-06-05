@@ -11,6 +11,10 @@ let package = Package(
       targets: ["VulkanKit"]
     ),
     .library(
+      name: "glm",
+      targets: ["glm"]
+    ),
+    .library(
       name: "glTF",
       targets: ["glTF"]
     ),
@@ -32,6 +36,9 @@ let package = Package(
       ]
     ),
     .target(
+      name: "glm"
+    ),
+    .target(
       name: "glTF"
     ),
     .systemLibrary(
@@ -47,11 +54,13 @@ let package = Package(
       name: "VulkanKitDemo",
       dependencies: [
         .target(name: "VulkanKit"),
-        .target(name: "glTF")
+        .target(name: "glTF"),
+        .target(name: "glm")
       ],
       swiftSettings: [
         .interoperabilityMode(.Cxx)
       ]
     ),
-  ]
+  ],
+  cxxLanguageStandard: .cxx17
 )
