@@ -37,20 +37,38 @@ public extension Vulkan
   {
     public var device: VkDevice
     public var image: VkImage
+    public var imageLayout: VkImageLayout
     public var imageView: VkImageView
     public var deviceMemory: VkDeviceMemory
+    public var width: Int
+    public var height: Int
+    public var mipLevels: Int
+    public var layerCount: Int
+    public var decriptor: VkDescriptorImageInfo
     public var sampler: VkSampler?
 
     public init(device: VkDevice,
                 image: VkImage,
+                imageLayout: VkImageLayout,
                 imageView: VkImageView,
                 deviceMemory: VkDeviceMemory,
+                width: Int,
+                height: Int,
+                mipLevels: Int,
+                layerCount: Int,
+                decriptor: VkDescriptorImageInfo,
                 sampler: VkSampler)
     {
       self.device = device
       self.image = image
+      self.imageLayout = imageLayout
       self.imageView = imageView
       self.deviceMemory = deviceMemory
+      self.width = width
+      self.height = height
+      self.mipLevels = mipLevels
+      self.layerCount = layerCount
+      self.decriptor = decriptor
       self.sampler = sampler
     }
 
@@ -68,6 +86,30 @@ public extension Vulkan
         vkDestroySampler(device, sampler, nil)
       }
       vkFreeMemory(device, deviceMemory, nil)
+    }
+
+    public func updateDescriptor()
+    {
+      decriptor.sampler = sampler
+      decriptor.imageView = imageView
+      decriptor.imageLayout = imageLayout
+    }
+
+    public func loadKTXFile(filename: String, target: inout UnsafeMutablePointer<ktxTexture>?) -> ktxResult
+    {
+      var result: ktxResult = KTX_SUCCESS
+
+      if !Vulkan.Tools.fileExists(atPath: filename)
+      {
+        Vulkan.Tools.exitFatal("""
+          Could not load texture from \(filename).
+          Make sure the assets submodule has been
+          checked out and is up-to-date.
+          """)
+      }
+      result = ktxTexture_CreateFromNamedFile(filename, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT.rawValue, &target)
+
+      return result
     }
   }
 }

@@ -1,5 +1,6 @@
 module vulkan [system] {
     header "vulkan.h"
     link "vulkan"
+    link "ktx"
     export *
 }
