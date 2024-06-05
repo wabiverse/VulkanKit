@@ -34,8 +34,8 @@ import VulkanKit
 
 public extension glTF
 {
-  struct Image
+  struct Texture
   {
-    public var texture: Vulkan.Texture
+    public var index: Int
   }
 }

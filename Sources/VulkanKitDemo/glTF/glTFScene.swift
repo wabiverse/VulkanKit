@@ -38,5 +38,10 @@ public extension glTF
   class Scene
   {
     public var device: VkDevice?
+
+    public var images: [Image] = []
+    public var textures: [Texture] = []
+    public var materials: [Material] = []
+    public var nodes: [Node] = []
   }
 }

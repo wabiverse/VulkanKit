@@ -29,13 +29,16 @@
  * ---------------------------------------------------------------- */
 
 import Foundation
+import glm
 import glTF
-import VulkanKit
+import vulkan
 
-public extension glTF
+public extension glTF.Material
 {
-  struct Image
+  enum AlphaMode: String
   {
-    public var texture: Vulkan.Texture
+    case opaque
+    case mask
+    case blend
   }
 }

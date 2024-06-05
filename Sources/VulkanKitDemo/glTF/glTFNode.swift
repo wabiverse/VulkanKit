@@ -29,13 +29,32 @@
  * ---------------------------------------------------------------- */
 
 import Foundation
+import glm
 import glTF
-import VulkanKit
+import vulkan
 
 public extension glTF
 {
-  struct Image
+  class Node
   {
-    public var texture: Vulkan.Texture
+    var parent: Node
+    var children: [Node]
+    var matrix: glm.mat4
+    var name: String
+    var visible: Bool
+
+    init()
+    {
+      parent = Node()
+      children = []
+      matrix = glm.mat4(1.0)
+      name = ""
+      visible = true
+    }
+
+    deinit
+    {
+      children.removeAll()
+    }
   }
 }

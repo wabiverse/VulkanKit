@@ -29,13 +29,21 @@
  * ---------------------------------------------------------------- */
 
 import Foundation
+import glm
 import glTF
-import VulkanKit
+import vulkan
 
 public extension glTF
 {
-  struct Image
+  struct Material
   {
-    public var texture: Vulkan.Texture
+    public var baseColorFactor = glm.vec4(1.0)
+    public var baseColorTextureIndex: UInt32
+    public var normalTextureIndex: UInt32
+    public var alphaMode: AlphaMode = .opaque
+    public var alphaCutOff: Float
+    public var doubleSided = false
+    public var descriptorSet: VkDescriptorSet
+    public var pipeline: VkPipeline
   }
 }
