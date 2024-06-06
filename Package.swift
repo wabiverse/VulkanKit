@@ -5,6 +5,9 @@ import PackageDescription
 
 let package = Package(
   name: "VulkanKit",
+  platforms: [
+    .macOS(.v14)
+  ],
   products: [
     .library(
       name: "VulkanKit",

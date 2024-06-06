@@ -31,7 +31,7 @@
 import VulkanKit
 
 @main
-final class VulkanKitDemo
+enum VulkanKitDemo
 {
   static func main()
   {

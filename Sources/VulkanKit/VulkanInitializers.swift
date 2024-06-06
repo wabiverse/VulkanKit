@@ -279,7 +279,7 @@ public extension Vulkan
       var descriptorPoolInfo = VkDescriptorPoolCreateInfo()
       descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO
       descriptorPoolInfo.poolSizeCount = UInt32(poolSizes.size())
-      descriptorPoolInfo.pPoolSizes = UnsafePointer<VkDescriptorPoolSize>(Array<VkDescriptorPoolSize>(poolSizes).withUnsafeBufferPointer { $0.baseAddress })
+      descriptorPoolInfo.pPoolSizes = UnsafePointer<VkDescriptorPoolSize>([VkDescriptorPoolSize](poolSizes).withUnsafeBufferPointer { $0.baseAddress })
       descriptorPoolInfo.maxSets = maxSets
       return descriptorPoolInfo
     }
@@ -331,7 +331,7 @@ public extension Vulkan
     {
       var descriptorSetLayoutCreateInfo = VkDescriptorSetLayoutCreateInfo()
       descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO
-      descriptorSetLayoutCreateInfo.pBindings = UnsafePointer<VkDescriptorSetLayoutBinding>(Array<VkDescriptorSetLayoutBinding>(bindings).withUnsafeBufferPointer { $0.baseAddress })
+      descriptorSetLayoutCreateInfo.pBindings = UnsafePointer<VkDescriptorSetLayoutBinding>([VkDescriptorSetLayoutBinding](bindings).withUnsafeBufferPointer { $0.baseAddress })
       descriptorSetLayoutCreateInfo.bindingCount = UInt32(bindings.size())
       return descriptorSetLayoutCreateInfo
     }
@@ -469,9 +469,9 @@ public extension Vulkan
       var pipelineVertexInputStateCreateInfo = VkPipelineVertexInputStateCreateInfo()
       pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
       pipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = UInt32(vertexBindingDescriptions.size())
-      pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = UnsafePointer<VkVertexInputBindingDescription>(Array<VkVertexInputBindingDescription>(vertexBindingDescriptions).withUnsafeBufferPointer { $0.baseAddress })
+      pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = UnsafePointer<VkVertexInputBindingDescription>([VkVertexInputBindingDescription](vertexBindingDescriptions).withUnsafeBufferPointer { $0.baseAddress })
       pipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = UInt32(vertexAttributeDescriptions.size())
-      pipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = UnsafePointer<VkVertexInputAttributeDescription>(Array<VkVertexInputAttributeDescription>(vertexAttributeDescriptions).withUnsafeBufferPointer { $0.baseAddress })
+      pipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = UnsafePointer<VkVertexInputAttributeDescription>([VkVertexInputAttributeDescription](vertexAttributeDescriptions).withUnsafeBufferPointer { $0.baseAddress })
       return pipelineVertexInputStateCreateInfo
     }
 
@@ -601,7 +601,7 @@ public extension Vulkan
     {
       var pipelineDynamicStateCreateInfo = VkPipelineDynamicStateCreateInfo()
       pipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO
-      pipelineDynamicStateCreateInfo.pDynamicStates = UnsafePointer<VkDynamicState>(Array<VkDynamicState>(pDynamicStates).withUnsafeBufferPointer { $0.baseAddress })
+      pipelineDynamicStateCreateInfo.pDynamicStates = UnsafePointer<VkDynamicState>([VkDynamicState](pDynamicStates).withUnsafeBufferPointer { $0.baseAddress })
       pipelineDynamicStateCreateInfo.dynamicStateCount = UInt32(pDynamicStates.size())
       pipelineDynamicStateCreateInfo.flags = flags
       return pipelineDynamicStateCreateInfo
@@ -720,7 +720,7 @@ public extension Vulkan
     {
       var specializationInfo = VkSpecializationInfo()
       specializationInfo.mapEntryCount = UInt32(mapEntries.size())
-      specializationInfo.pMapEntries = UnsafePointer<VkSpecializationMapEntry>(Array<VkSpecializationMapEntry>(mapEntries).withUnsafeBufferPointer { $0.baseAddress })
+      specializationInfo.pMapEntries = UnsafePointer<VkSpecializationMapEntry>([VkSpecializationMapEntry](mapEntries).withUnsafeBufferPointer { $0.baseAddress })
       specializationInfo.dataSize = dataSize
       specializationInfo.pData = data
       return specializationInfo

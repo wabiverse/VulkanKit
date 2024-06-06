@@ -44,7 +44,7 @@ public extension Vulkan
     let column: Int
     let kind: ErrorKind
 
-    public static func log(kind: ErrorKind, line: Int = #line, column: Int = #column) -> RuntimeError
+    public static func log(kind: ErrorKind, line _: Int = #line, column _: Int = #column) -> RuntimeError
     {
       RuntimeError(line: #line, column: #column, kind: kind)
     }

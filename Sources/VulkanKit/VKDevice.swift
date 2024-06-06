@@ -87,11 +87,13 @@ public extension Vulkan
           {
             // convert cchar tuple of extension name to string.
             var extensionName = ext.extensionName
-            let extName = withUnsafePointer(to: &extensionName) {
-              $0.withMemoryRebound(to: CChar.self, capacity: 256) {
+            let extName = withUnsafePointer(to: &extensionName)
+            {
+              $0.withMemoryRebound(to: CChar.self, capacity: 256)
+              {
                 String(cString: $0)
               }
-            } 
+            }
 
             // Add extension to list of supported extensions.
             supportedExtensions.append(extName)
@@ -140,8 +142,10 @@ public extension Vulkan
     func getMemoryType(typeBits: inout UInt32, properties: VkMemoryPropertyFlags, memTypeFound _: Bool? = nil) -> UInt32
     {
       // convert VkMemoryType tuple of memoryTypes to buffer pointer.
-      let memoryTypes = withUnsafePointer(to: &memoryProperties.memoryTypes) {
-        $0.withMemoryRebound(to: VkMemoryType.self, capacity: 32) {
+      let memoryTypes = withUnsafePointer(to: &memoryProperties.memoryTypes)
+      {
+        $0.withMemoryRebound(to: VkMemoryType.self, capacity: 32)
+        {
           $0
         }
       }
