@@ -35,29 +35,29 @@ public extension Vulkan
 {
   class Texture
   {
-    public var device: VkDevice
-    public var image: VkImage
+    public var device: Vulkan.Device
+    public var image: VkImage?
     public var imageLayout: VkImageLayout
-    public var imageView: VkImageView
-    public var deviceMemory: VkDeviceMemory
-    public var width: Int
-    public var height: Int
-    public var mipLevels: Int
-    public var layerCount: Int
+    public var imageView: VkImageView?
+    public var deviceMemory: VkDeviceMemory?
+    public var width: UInt32
+    public var height: UInt32
+    public var mipLevels: UInt32
+    public var layerCount: UInt32
     public var decriptor: VkDescriptorImageInfo
     public var sampler: VkSampler?
 
-    public init(device: VkDevice,
-                image: VkImage,
+    public init(device: Vulkan.Device,
+                image: VkImage?,
                 imageLayout: VkImageLayout,
-                imageView: VkImageView,
-                deviceMemory: VkDeviceMemory,
-                width: Int,
-                height: Int,
-                mipLevels: Int,
-                layerCount: Int,
+                imageView: VkImageView?,
+                deviceMemory: VkDeviceMemory?,
+                width: UInt32,
+                height: UInt32,
+                mipLevels: UInt32,
+                layerCount: UInt32,
                 decriptor: VkDescriptorImageInfo,
-                sampler: VkSampler)
+                sampler: VkSampler?)
     {
       self.device = device
       self.image = image
@@ -79,13 +79,13 @@ public extension Vulkan
 
     public func destroy()
     {
-      vkDestroyImageView(device, imageView, nil)
-      vkDestroyImage(device, image, nil)
+      vkDestroyImageView(device.logicalDevice, imageView, nil)
+      vkDestroyImage(device.logicalDevice, image, nil)
       if let sampler
       {
-        vkDestroySampler(device, sampler, nil)
+        vkDestroySampler(device.logicalDevice, sampler, nil)
       }
-      vkFreeMemory(device, deviceMemory, nil)
+      vkFreeMemory(device.logicalDevice, deviceMemory, nil)
     }
 
     public func updateDescriptor()
