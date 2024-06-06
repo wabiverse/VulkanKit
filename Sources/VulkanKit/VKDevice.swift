@@ -86,10 +86,15 @@ public extension Vulkan
           for ext in extensions
           {
             // convert cchar tuple of extension name to string.
-            if let extName = [CChar].fromTuple(ext.extensionName)
-            {
-              supportedExtensions.append(String(cString: extName))
-            }
+            var extensionName = ext.extensionName
+            let extName = withUnsafePointer(to: &extensionName) {
+              $0.withMemoryRebound(to: CChar.self, capacity: 256) {
+                String(cString: $0)
+              }
+            } 
+
+            // Add extension to list of supported extensions.
+            supportedExtensions.append(extName)
           }
         }
       }
@@ -134,8 +139,12 @@ public extension Vulkan
 
     func getMemoryType(typeBits: inout UInt32, properties: VkMemoryPropertyFlags, memTypeFound _: Bool? = nil) -> UInt32
     {
-      guard let memoryTypes = [VkMemoryType].fromTuple(memoryProperties.memoryTypes)
-      else { print("Could not get memory types."); return 0 }
+      // convert VkMemoryType tuple of memoryTypes to buffer pointer.
+      let memoryTypes = withUnsafePointer(to: &memoryProperties.memoryTypes) {
+        $0.withMemoryRebound(to: VkMemoryType.self, capacity: 32) {
+          $0
+        }
+      }
 
       for i in 0 ..< memoryProperties.memoryTypeCount
       {
@@ -183,24 +192,5 @@ public extension Vulkan
     {
       flushCommandBuffer(cmdBuffer: &cmdBuffer, queue: queue, pool: commandPool!, free: free)
     }
-  }
-}
-
-extension Array
-{
-  static func fromTuple(_ tuple: some Any) -> [Element]?
-  {
-    let val = Array<Element>.fromTupleOptional(tuple)
-    return val.allSatisfy { $0 != nil } ? val.map { $0! } : nil
-  }
-
-  static func fromTupleOptional(_ tuple: some Any) -> [Element?]
-  {
-    Mirror(reflecting: tuple)
-      .children
-      .filter
-      { child in
-        (child.label ?? "x").allSatisfy { char in ".1234567890".contains(char) }
-      }.map { $0.value as? Element }
   }
 }
