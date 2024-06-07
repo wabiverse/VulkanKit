@@ -29,8 +29,8 @@
  * ---------------------------------------------------------------- */
 
 import Foundation
-import vulkan
 import libktx
+import vulkan
 
 public extension Vulkan
 {
@@ -44,7 +44,7 @@ public extension Vulkan
                       imageLayout: VkImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                       forceLinear: Bool = false)
     {
-      var ktxTexture: UnsafeMutablePointer<ktxTexture>? = UnsafeMutablePointer<ktxTexture>.allocate(capacity: 1)
+      var ktxTexture: KTXTexture? = KTXTexture.allocate(capacity: 1)
       let result: ktxResult = loadKTXFile(atPath: filename, target: &ktxTexture)
       assert(result == KTX_SUCCESS)
 
@@ -56,8 +56,8 @@ public extension Vulkan
       height = ktxTexture.pointee.baseHeight
       mipLevels = ktxTexture.pointee.numLevels
 
-      var ktxTextureData: UnsafeMutablePointer<ktx_uint8_t> = ktxTexture_GetData(ktxTexture)
-      let ktxTextureSize = ktxTexture_GetDataSize(ktxTexture)
+      var ktxTextureData = ktxTexture.getData()
+      let ktxTextureSize = ktxTexture.getDataSize()
 
       // Get device properties for the requested texture format
       var formatProperties = VkFormatProperties()
@@ -117,9 +117,9 @@ public extension Vulkan
 
         for i in 0 ..< mipLevels
         {
-          let offset: ktx_size_t = 0
-          // var result: ktx_error_code_e = ktxTexture_GetImageOffset(ktxTexture, i, 0, 0, &offset);
-          // assert(result == KTX_SUCCESS);
+          var offset: UInt32 = 0
+          let result = ktxTexture.getImageOffset(level: i, layer: 0, slice: 0, offset: &offset)
+          assert(result == KTX_SUCCESS)
 
           var bufferCopyRegion = VkBufferImageCopy()
           bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT.rawValue
@@ -287,7 +287,7 @@ public extension Vulkan
         device.flushCommandBuffer(cmdBuffer: &copyCmd, queue: copyQueue)
       }
 
-      // ktxTexture_Destroy(ktxTexture)
+      ktxTexture.destroy()
 
       // Create a default sampler
       var samplerCreateInfo = VkSamplerCreateInfo()

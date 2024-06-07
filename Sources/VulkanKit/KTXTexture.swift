@@ -29,30 +29,32 @@
  * ---------------------------------------------------------------- */
 
 import Foundation
+import libktx
 import vulkan
 
-public extension Vulkan
+public typealias KTXTexture = UnsafeMutablePointer<ktxTexture>
+
+public extension KTXTexture
 {
-  enum Version
+  func getImageOffset(level: UInt32, layer: UInt32, slice: UInt32, offset: inout UInt32) -> ktxResult
   {
-    case major
-    case minor
-    case patch
+    var ktxOffset: ktx_size_t = 0
+    defer { offset = UInt32(ktxOffset) }
+    return pointee.vtbl.pointee.GetImageOffset(self, level, layer, slice, &ktxOffset)
+  }
 
-    public var rawValue: UInt32
-    {
-      _ = Vulkan.shared.getVersion(&Vulkan.shared.fullVersion)
-      switch self
-      {
-        case .major: return vkApiVersionMajor(Vulkan.shared.fullVersion)
-        case .minor: return vkApiVersionMinor(Vulkan.shared.fullVersion)
-        case .patch: return vkApiVersionPatch(Vulkan.shared.fullVersion)
-      }
-    }
+  func destroy()
+  {
+    pointee.vtbl.pointee.Destroy(self)
+  }
+  
+  func getData() -> UnsafeMutablePointer<ktx_uint8_t>
+  {
+    ktxTexture_GetData(self)
+  }
 
-    public static var description: String
-    {
-      "\(Version.major.rawValue).\(Version.minor.rawValue).\(Version.patch.rawValue)"
-    }
+  func getDataSize() -> Int
+  {
+    pointee.vtbl.pointee.GetDataSizeUncompressed(self)
   }
 }

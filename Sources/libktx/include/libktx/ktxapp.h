@@ -19,7 +19,7 @@
 
 #include <iostream>
 #include <vector>
-#include <ktx.h>
+#include <libktx/ktx.h>
 
 #include "argparser.h"
 #include "platform_utils.h"

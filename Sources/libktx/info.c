@@ -28,7 +28,7 @@
   #include <io.h>
 #endif
 
-#include <ktx.h>
+#include <libktx/ktx.h>
 
 #include "dfdutils/dfdutils.h"
 #include "filestream.h"

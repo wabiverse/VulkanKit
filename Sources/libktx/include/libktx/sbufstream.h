@@ -25,7 +25,7 @@
 
 #include <iostream>
 #include <memory>
-#include <ktx.h>
+#include <libktx/ktx.h>
 
 static std::ostream cnull(0);
 static std::ostream& logstream = cnull;

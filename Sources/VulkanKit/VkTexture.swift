@@ -29,8 +29,8 @@
  * ---------------------------------------------------------------- */
 
 import Foundation
-import vulkan
 import libktx
+import vulkan
 
 public extension Vulkan
 {
