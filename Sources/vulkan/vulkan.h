@@ -2,7 +2,6 @@
 #define __VULKANKIT_VULKAN_H__
 
 #include <vulkan/vulkan.h>
-#include <ktx.h>
 #include <vector>
 
 /* ---------------------------------------- */
