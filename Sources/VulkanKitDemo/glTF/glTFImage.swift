@@ -36,6 +36,6 @@ public extension glTF
 {
   struct Image
   {
-    public var texture: Vulkan.Texture
+    public var texture: Vulkan.Texture2D
   }
 }

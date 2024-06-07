@@ -30,13 +30,37 @@
 
 import Foundation
 import glTF
+import vulkan
 import VulkanKit
 
 public extension glTF.Scene
 {
-  enum Images
+  class Images
   {
-    func load(input _: tinygltf.Model)
-    {}
+    private let scene: glTF.Scene
+
+    public init(scene: glTF.Scene)
+    {
+      let vgi = Vulkan.Base()
+
+      self.scene = scene
+      self.scene.device = vgi.vulkanDevice
+      self.scene.copyQueue = vgi.queue
+    }
+
+    public func load(input: tinygltf.Model)
+    {
+      // POI: The textures for the glTF file used in this sample are stored as external ktx files, so we can directly load them from disk without the need for conversion
+      for i in 0 ..< input.images.count
+      {
+        let glTFImage = input.images[i]
+        scene.images[i].texture.loadFromFile(
+          atPath: scene.path + "/" + String(glTFImage.uri),
+          format: VK_FORMAT_R8G8B8A8_UNORM,
+          device: scene.device,
+          copyQueue: scene.copyQueue
+        )
+      }
+    }
   }
 }

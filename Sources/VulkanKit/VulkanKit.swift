@@ -47,7 +47,7 @@ public class Vulkan
   /**
    * the integral value of the vulkan version.
    */
-  var fullVersion: UInt32 = 0
+  public var fullVersion: UInt32 = 0
 
   /**
    * Get the Vulkan instance version, using the vulkan api.

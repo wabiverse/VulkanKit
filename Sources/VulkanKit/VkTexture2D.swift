@@ -36,13 +36,13 @@ public extension Vulkan
 {
   class Texture2D: Texture
   {
-    func loadFromFile(atPath filename: String,
-                      format: VkFormat,
-                      device: Vulkan.Device,
-                      copyQueue: VkQueue,
-                      imageUsageFlags: VkImageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT.rawValue,
-                      imageLayout: VkImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                      forceLinear: Bool = false)
+    public func loadFromFile(atPath filename: String,
+                             format: VkFormat,
+                             device: Vulkan.Device,
+                             copyQueue: VkQueue,
+                             imageUsageFlags: VkImageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT.rawValue,
+                             imageLayout: VkImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                             forceLinear: Bool = false)
     {
       var ktxTexture: KTXTexture? = KTXTexture.allocate(capacity: 1)
       var result: ktxResult = loadKTXFile(atPath: filename, target: &ktxTexture)

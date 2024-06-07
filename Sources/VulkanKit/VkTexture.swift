@@ -49,16 +49,16 @@ public extension Vulkan
     public var sampler: VkSampler?
 
     public init(device: Vulkan.Device,
-                image: VkImage?,
-                imageLayout: VkImageLayout,
-                imageView: VkImageView?,
-                deviceMemory: VkDeviceMemory?,
-                width: UInt32,
-                height: UInt32,
-                mipLevels: UInt32,
-                layerCount: UInt32,
-                decriptor: VkDescriptorImageInfo,
-                sampler: VkSampler?)
+                image: VkImage? = nil,
+                imageLayout: VkImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                imageView: VkImageView? = nil,
+                deviceMemory: VkDeviceMemory? = nil,
+                width: UInt32 = 0,
+                height: UInt32 = 0,
+                mipLevels: UInt32 = 1,
+                layerCount: UInt32 = 1,
+                decriptor: VkDescriptorImageInfo = VkDescriptorImageInfo(),
+                sampler: VkSampler? = nil)
     {
       self.device = device
       self.image = image

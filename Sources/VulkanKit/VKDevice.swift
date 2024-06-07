@@ -55,7 +55,7 @@ public extension Vulkan
       public var transfer: UInt32 = 0
     }
 
-    public init(physicalDevice: VkPhysicalDevice)
+    public init(physicalDevice: VkPhysicalDevice = .init(bitPattern: 0)!)
     {
       assert(physicalDevice != VkPhysicalDevice(bitPattern: 0))
       self.physicalDevice = physicalDevice

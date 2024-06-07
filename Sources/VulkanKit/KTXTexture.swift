@@ -47,7 +47,7 @@ public extension KTXTexture
   {
     pointee.vtbl.pointee.Destroy(self)
   }
-  
+
   func getData() -> UnsafeMutablePointer<ktx_uint8_t>
   {
     ktxTexture_GetData(self)

@@ -37,7 +37,9 @@ public extension glTF
 {
   class Scene
   {
-    public var device: VkDevice?
+    public var device: Vulkan.Device = .init()
+    public var copyQueue: VkQueue = .init(bitPattern: 0)!
+    public var path: String = ""
 
     public var images: [Image] = []
     public var textures: [Texture] = []
