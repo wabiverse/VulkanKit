@@ -45,7 +45,7 @@ public extension Vulkan
                       forceLinear: Bool = false)
     {
       var ktxTexture: KTXTexture? = KTXTexture.allocate(capacity: 1)
-      let result: ktxResult = loadKTXFile(atPath: filename, target: &ktxTexture)
+      var result: ktxResult = loadKTXFile(atPath: filename, target: &ktxTexture)
       assert(result == KTX_SUCCESS)
 
       guard let ktxTexture
@@ -118,7 +118,7 @@ public extension Vulkan
         for i in 0 ..< mipLevels
         {
           var offset: UInt32 = 0
-          let result = ktxTexture.getImageOffset(level: i, layer: 0, slice: 0, offset: &offset)
+          result = ktxTexture.getImageOffset(level: i, layer: 0, slice: 0, offset: &offset)
           assert(result == KTX_SUCCESS)
 
           var bufferCopyRegion = VkBufferImageCopy()
