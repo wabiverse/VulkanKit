@@ -107,16 +107,15 @@ public extension Vulkan
       vkEnumerateInstanceExtensionProperties(nil, &extCount, nil)
       if extCount > 0
       {
-        var extensions = UnsafeMutablePointer<VkExtensionProperties>.allocate(capacity: Int(extCount))
-        var extensionsPtr = extensions.pointee
+        let extensions = UnsafeMutablePointer<VkExtensionProperties>.allocate(capacity: Int(extCount))
         
         print("")
         print("Registering supported vulkan extensions...")
-        if vkEnumerateInstanceExtensionProperties(nil, &extCount, &extensionsPtr) == VK_SUCCESS
+        if vkEnumerateInstanceExtensionProperties(nil, &extCount, &extensions.pointee) == VK_SUCCESS
         {
           for extIdx in 0..<extCount
-          {
-            let extName = withUnsafePointer(to: &extensionsPtr.extensionName)
+          {          
+            let extName = withUnsafePointer(to: &extensions.advanced(by: Int(extIdx)).pointee.extensionName)
             {
               $0.withMemoryRebound(to: CChar.self, capacity: 256)
               {
