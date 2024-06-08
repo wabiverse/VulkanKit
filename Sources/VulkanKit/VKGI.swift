@@ -114,7 +114,7 @@ public extension Vulkan
         print("Registering supported vulkan extensions...")
         if vkEnumerateInstanceExtensionProperties(nil, &extCount, &extensionsPtr) == VK_SUCCESS
         {
-          for extIdx in 0..<extCount
+          for extIdx in 0...extCount
           {
             let extName = withUnsafePointer(to: &extensionsPtr.extensionName)
             {
