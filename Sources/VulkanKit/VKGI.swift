@@ -179,7 +179,7 @@ public extension Vulkan
       var result = createInstance()
       if result != VK_SUCCESS
       {
-        Vulkan.Tools.exitFatal("Could not create Vulkan instance: \(result.rawValue).")
+        Vulkan.Tools.errorString(result)
         return false
       }
 
