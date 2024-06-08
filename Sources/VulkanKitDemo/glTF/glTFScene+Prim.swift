@@ -30,39 +30,33 @@
 
 import Foundation
 import glTF
-import vulkan
-import VulkanKit
 
-public extension glTF
+public extension glTF.Scene
 {
-  class Scene
+  protocol Object
   {
-    public init(vgi: Vulkan.GI)
+    init(scene: glTF.Scene)
+
+    var scene: glTF.Scene { get }
+
+    func load(input: tinygltf.Model)
+  }
+}
+
+public extension glTF.Scene
+{
+  class Prim: glTF.Scene.Object
+  {
+    public required init(scene: glTF.Scene)
     {
-      device = vgi.vulkanDevice!
-      copyQueue = vgi.queue!
-
-      let imagePrims = glTF.Scene.Images(scene: self)
-      let matPrims = glTF.Scene.Materials(scene: self)
-      let nodePrims = glTF.Scene.Nodes(scene: self)
-      let texPrims = glTF.Scene.Textures(scene: self)
-
-      prims.append(imagePrims)
-      prims.append(matPrims)
-      prims.append(nodePrims)
-      prims.append(texPrims)
+      self.scene = scene
     }
 
-    public var device: Vulkan.Device
-    public var copyQueue: VkQueue
+    public let scene: glTF.Scene
 
-    public var path: String = ""
-
-    public var prims: [glTF.Scene.Prim] = []
-
-    public var images: [Image] = []
-    public var textures: [Texture] = []
-    public var materials: [Material] = []
-    public var nodes: [Node] = []
+    public func load(input _: tinygltf.Model)
+    {
+      fatalError("load(input:) has not been implemented")
+    }
   }
 }

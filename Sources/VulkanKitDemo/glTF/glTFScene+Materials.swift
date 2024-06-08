@@ -34,9 +34,9 @@ import VulkanKit
 
 public extension glTF.Scene
 {
-  enum Materials
+  class Materials: glTF.Scene.Prim
   {
-    func load(input _: tinygltf.Model)
+    override public func load(input _: tinygltf.Model)
     {}
   }
 }

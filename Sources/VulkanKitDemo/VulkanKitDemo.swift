@@ -40,5 +40,18 @@ enum VulkanKitDemo
     print("patch:", Vulkan.Version.patch.rawValue)
 
     print("Vulkan Instance Version:", Vulkan.Version.description)
+
+    let vgi = Vulkan.GI()
+    if vgi.initVulkan()
+    {
+      print("Successfully initialized vulkan.")
+      // vgi.setupWindow(nil)
+      // vgi.prepare()
+      // vgi.renderLoop()
+    }
+    else
+    {
+      fatalError("Failed to initialize vulkan.")
+    }
   }
 }

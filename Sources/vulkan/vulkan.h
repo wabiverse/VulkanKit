@@ -21,6 +21,7 @@ using VkVertexInputAttributeDescriptionVec = std::vector<VkVertexInputAttributeD
 using VkDynamicStateVec = std::vector<VkDynamicState>;
 using VkSpecializationMapEntryVec = std::vector<VkSpecializationMapEntry>;
 using VkBufferImageCopyVec = std::vector<VkBufferImageCopy>;
+using VkExtensionPropertiesVec = std::vector<VkExtensionProperties>;
 
 /* ---------------------------------------- */
 

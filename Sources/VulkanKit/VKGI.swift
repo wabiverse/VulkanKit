@@ -33,10 +33,10 @@ import vulkan
 
 public extension Vulkan
 {
-  class Base
+  class GI
   {
-    public var title = "Vulkan Base"
-    public var name = "vulkan.base"
+    public var title = "Vulkan Graphics Interface"
+    public var name = "vulkan.gi"
 
     public var prepared: Bool = false
     public var resized: Bool = false
@@ -46,15 +46,15 @@ public extension Vulkan
 
     public var frameTimer: Float = 1.0
 
-    public var vulkanDevice: Vulkan.Device = .init()
+    public var vulkanDevice: Vulkan.Device?
 
     private var frameCounter: Int = 0
     private var lastFPS: Int = 0
 
-    private var instance: VkInstance? = .init(bitPattern: 0)!
+    private var instance: VkInstance?
     private var supportedExtensions: [String] = []
 
-    private var physicalDevice: VkPhysicalDevice = .init(bitPattern: 0)!
+    private var physicalDevice: VkPhysicalDevice?
     private var deviceProperties: VkPhysicalDeviceProperties = .init()
     private var deviceFeatures: VkPhysicalDeviceFeatures = .init()
     private var deviceMemoryProperties: VkPhysicalDeviceMemoryProperties = .init()
@@ -64,30 +64,30 @@ public extension Vulkan
     private var enabledInstanceExtensions: [String] = []
 
     // TODO: make these private
-    public var device: VkDevice = .init(bitPattern: 0)!
-    public var queue: VkQueue = .init(bitPattern: 0)!
+    public var device: VkDevice?
+    public var queue: VkQueue?
 
     private var depthFormat: VkFormat = VK_FORMAT_UNDEFINED
-    private var cmdPool: VkCommandPool = .init(bitPattern: 0)!
+    private var cmdPool: VkCommandPool?
 
     private var submitPipelineStages: VkPipelineStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT.rawValue
     private var submitInfo: VkSubmitInfo = .init()
 
     private var drawCmdBuffers: [VkCommandBuffer] = []
-    private var renderPass: VkRenderPass = .init(bitPattern: 0)!
+    private var renderPass: VkRenderPass?
     private var framebuffers: [VkFramebuffer] = []
     private var currentBuffer: Int = 0
 
-    private var descriptorPool: VkDescriptorPool = .init(bitPattern: 0)!
+    private var descriptorPool: VkDescriptorPool?
     private var shaderModules: [VkShaderModule] = []
-    private var pipelineCache: VkPipelineCache = .init(bitPattern: 0)!
+    private var pipelineCache: VkPipelineCache?
 
-    private var swapchain: VkSwapchainKHR = .init(bitPattern: 0)!
+    private var swapchain: VkSwapchainKHR?
 
     private struct Semaphores
     {
-      var presentComplete: VkSemaphore = .init(bitPattern: 0)!
-      var renderComplete: VkSemaphore = .init(bitPattern: 0)!
+      var presentComplete: VkSemaphore?
+      var renderComplete: VkSemaphore?
     }
 
     private var waitFences: [VkFence] = []
@@ -99,32 +99,35 @@ public extension Vulkan
 
     public func createInstance() -> VkResult
     {
-      var instanceExtensions: [String] = [VK_KHR_SURFACE_EXTENSION_NAME]
+      var instanceExtensions: [String] = []
+      instanceExtensions.append(VK_KHR_SURFACE_EXTENSION_NAME)
 
       // Get extensions supported by the instance and store for later use
       var extCount: UInt32 = 0
       vkEnumerateInstanceExtensionProperties(nil, &extCount, nil)
       if extCount > 0
       {
-        let extensions = [VkExtensionProperties](repeating: VkExtensionProperties(), count: Int(extCount))
-        var firstExt = extensions.first!
-        if vkEnumerateInstanceExtensionProperties(nil, &extCount, &firstExt) == VK_SUCCESS
+        var extensions = UnsafeMutablePointer<VkExtensionProperties>.allocate(capacity: Int(extCount))
+        var extensionsPtr = extensions.pointee
+        var extIdx = 0
+        
+        print("")
+        print("Registering supported vulkan extensions...")
+        if vkEnumerateInstanceExtensionProperties(nil, &extCount, &extensionsPtr) == VK_SUCCESS
         {
-          for ext in extensions
+          repeat
           {
-            // convert cchar tuple of extension name to string.
-            var extensionName = ext.extensionName
-            let extName = withUnsafePointer(to: &extensionName)
+            extIdx += 1
+            let extName = withUnsafePointer(to: &extensionsPtr.extensionName)
             {
               $0.withMemoryRebound(to: CChar.self, capacity: 256)
               {
                 String(cString: $0)
               }
             }
-
-            // Add extension to list of supported extensions.
+            print("extension [\(extIdx) of \(extCount)]: \(extName)")
             supportedExtensions.append(extName)
-          }
+          } while extIdx < extCount 
         }
       }
 
@@ -133,7 +136,7 @@ public extension Vulkan
       {
         for enabledExtension in enabledInstanceExtensions
         {
-          // Output message if requested extension is not available
+          // output message if requested extension is not available.
           if supportedExtensions.contains(enabledExtension)
           {
             fatalError("Enabled instance extension \(enabledExtension) is not present at instance level.")
@@ -172,6 +175,7 @@ public extension Vulkan
       return result
     }
 
+    @discardableResult
     public func initVulkan() -> Bool
     {
       // Create the instance
@@ -226,7 +230,7 @@ public extension Vulkan
   }
 }
 
-extension Vulkan.Base
+extension Vulkan.GI
 {
   private func createAppInfo(
     for createInfoInstance: inout VkInstanceCreateInfo,
