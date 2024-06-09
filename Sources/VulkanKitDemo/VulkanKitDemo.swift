@@ -44,7 +44,8 @@ enum VulkanKitDemo
     let vgi = Vulkan.GI()
     if vgi.initVulkan()
     {
-      print("Successfully initialized vulkan.")
+      print("")
+      print("success: initialized vulkan.")
       // vgi.setupWindow(nil)
       // vgi.prepare()
       // vgi.renderLoop()

@@ -54,5 +54,10 @@ public extension Vulkan
     {
       "\(Version.major.rawValue).\(Version.minor.rawValue).\(Version.patch.rawValue)"
     }
+
+    public static func makeVersion(from fullVersion: UInt32) -> String
+    {
+      "\(vkApiVersionMajor(fullVersion)).\(vkApiVersionMinor(fullVersion)).\(vkApiVersionPatch(fullVersion))"
+    }
   }
 }

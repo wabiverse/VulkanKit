@@ -38,6 +38,11 @@ uint32_t vkApiVersion1_0()
   return VK_API_VERSION_1_0;
 }
 
+uint32_t vkApiVersion1_3()
+{
+  return VK_API_VERSION_1_3;
+}
+
 uint32_t vkApiVersionMajor(uint32_t v)
 {
   return VK_API_VERSION_MAJOR(v);

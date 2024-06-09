@@ -60,8 +60,9 @@ public extension Vulkan
     private var deviceMemoryProperties: VkPhysicalDeviceMemoryProperties = .init()
     private var enabledFeatures: VkPhysicalDeviceFeatures = .init()
 
-    private var enabledDeviceExtensions: [String] = []
+    private var instanceExtensions: [String] = []
     private var enabledInstanceExtensions: [String] = []
+    private var enabledDeviceExtensions: [String] = []
 
     // TODO: make these private
     public var device: VkDevice?
@@ -99,8 +100,15 @@ public extension Vulkan
 
     public func createInstance() -> VkResult
     {
-      var instanceExtensions: [String] = []
-      instanceExtensions.append(VK_KHR_SURFACE_EXTENSION_NAME)
+      enabledInstanceExtensions.append(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)
+      // enabledInstanceExtensions.append(VK_KHR_SURFACE_EXTENSION_NAME)
+      #if os(macOS)
+        /* macOS specific extensions. */
+        enabledInstanceExtensions.append(VK_EXT_METAL_SURFACE_EXTENSION_NAME)
+        enabledInstanceExtensions.append(VK_MVK_MACOS_SURFACE_EXTENSION_NAME)
+      #endif /* os(macOS) */
+      enabledInstanceExtensions.append(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)
+      enabledInstanceExtensions.append(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME)
 
       // Get extensions supported by the instance and store for later use
       var extCount: UInt32 = 0
@@ -108,13 +116,13 @@ public extension Vulkan
       if extCount > 0
       {
         let extensions = UnsafeMutablePointer<VkExtensionProperties>.allocate(capacity: Int(extCount))
-        
+
         print("")
-        print("Registering supported vulkan extensions...")
+        print("available vulkan extensions:")
         if vkEnumerateInstanceExtensionProperties(nil, &extCount, &extensions.pointee) == VK_SUCCESS
         {
-          for extIdx in 0..<extCount
-          {          
+          for extIdx in 0 ..< extCount
+          {
             let extName = withUnsafePointer(to: &extensions.advanced(by: Int(extIdx)).pointee.extensionName)
             {
               $0.withMemoryRebound(to: CChar.self, capacity: 256)
@@ -134,7 +142,7 @@ public extension Vulkan
         for enabledExtension in enabledInstanceExtensions
         {
           // output message if requested extension is not available.
-          if supportedExtensions.contains(enabledExtension)
+          if !supportedExtensions.contains(enabledExtension)
           {
             fatalError("Enabled instance extension \(enabledExtension) is not present at instance level.")
           }
@@ -153,20 +161,24 @@ public extension Vulkan
       appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO
       appInfo.pApplicationName = appName
       appInfo.pEngineName = appName
-      appInfo.apiVersion = Vulkan.shared.fullVersion
+      appInfo.apiVersion = vkApiVersion1_0()
 
-      var createApp = VkInstanceCreateInfo()
-      var appInfoPtr = withUnsafePointer(to: &appInfo)
+      let extensions = UnsafeMutablePointer<UnsafePointer<CChar>?>.allocate(capacity: instanceExtensions.count)
+      for (idx, ext) in instanceExtensions.enumerated()
       {
-        $0.withMemoryRebound(to: VkApplicationInfo.self, capacity: 1)
-        {
-          $0
-        }
+        extensions.advanced(by: idx).pointee = ext.withCString { $0 }
       }
+      #if DEBUG_VULKAN_EXTENSIONS
+        for (idx, _) in instanceExtensions.enumerated()
+        {
+          print("got ext:", String(cString: extensions.advanced(by: idx).pointee!))
+        }
+      #endif // DEBUG_VULKAN_EXTENSIONS
+
       let result = createAppInfo(
-        for: &createApp,
-        with: &appInfoPtr,
-        extensions: &instanceExtensions
+        with: &appInfo,
+        extensions: &extensions.pointee,
+        extensionsCount: instanceExtensions.count
       )
 
       return result
@@ -179,8 +191,14 @@ public extension Vulkan
       var result = createInstance()
       if result != VK_SUCCESS
       {
+        print("")
         Vulkan.Tools.errorString(result)
         return false
+      }
+      else
+      {
+        print("")
+        print("success: vulkan instance created.")
       }
 
       // Physical device (number of available physical devices).
@@ -203,14 +221,38 @@ public extension Vulkan
 
       // GPU selection.
       let selectedDevice: UInt32 = 0
+      print("")
       print("available vulkan devices:")
       for i in 0 ..< gpuCount
       {
-        var deviceProperties: VkPhysicalDeviceProperties = .init()
-        vkGetPhysicalDeviceProperties(physicalDevices[Int(i)], &deviceProperties)
-        print("device [\(i)]:", deviceProperties.deviceName)
-        print("type:", deviceProperties.deviceType)
-        print("api:", deviceProperties.apiVersion)
+        let deviceProperties = UnsafeMutablePointer<VkPhysicalDeviceProperties>.allocate(capacity: 1)
+        vkGetPhysicalDeviceProperties(physicalDevices[Int(i)], deviceProperties)
+        let deviceName = withUnsafePointer(to: &deviceProperties.pointee.deviceName)
+        {
+          $0.withMemoryRebound(to: CChar.self, capacity: 256)
+          {
+            String(cString: $0)
+          }
+        }
+        print("device [\(i + 1) of \(gpuCount)]:", deviceName)
+        switch deviceProperties.pointee.deviceType
+        {
+          case VK_PHYSICAL_DEVICE_TYPE_OTHER:
+            print("type: other")
+          case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+            print("type: integrated gpu")
+          case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+            print("type: discrete gpu")
+          case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+            print("type: virtual gpu")
+          case VK_PHYSICAL_DEVICE_TYPE_CPU:
+            print("type: cpu")
+          default:
+            print("type: unknown")
+        }
+
+        let v = deviceProperties.pointee.apiVersion
+        print("api:", Vulkan.Version.makeVersion(from: v))
       }
 
       guard let foundDevice = physicalDevices[Int(selectedDevice)]
@@ -230,28 +272,20 @@ public extension Vulkan
 extension Vulkan.GI
 {
   private func createAppInfo(
-    for createInfoInstance: inout VkInstanceCreateInfo,
-    with appInfo: inout UnsafePointer<VkApplicationInfo>,
-    extensions: inout [String]
+    with appInfo: UnsafePointer<VkApplicationInfo>,
+    extensions: UnsafePointer<UnsafePointer<CChar>?>,
+    extensionsCount: Int
   ) -> VkResult
   {
-    createInfoInstance.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO
-    createInfoInstance.pApplicationInfo = appInfo
+    var createApp = VkInstanceCreateInfo()
 
-    if !extensions.isEmpty
-    {
-      createInfoInstance.enabledExtensionCount = UInt32(extensions.count)
-      var enabledExts = extensions
-      let extensionsPtr = withUnsafePointer(to: &enabledExts)
-      {
-        $0.withMemoryRebound(to: UnsafePointer<CChar>?.self, capacity: extensions.count)
-        {
-          $0
-        }
-      }
-      createInfoInstance.ppEnabledExtensionNames = extensionsPtr
-    }
+    createApp.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO
+    createApp.pApplicationInfo = appInfo
+    createApp.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR.rawValue
 
-    return vkCreateInstance(&createInfoInstance, nil, &instance)
+    createApp.enabledExtensionCount = UInt32(extensionsCount)
+    createApp.ppEnabledExtensionNames = extensions
+
+    return vkCreateInstance(&createApp, nil, &instance)
   }
 }

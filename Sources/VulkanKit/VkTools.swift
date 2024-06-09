@@ -54,7 +54,7 @@ public extension Vulkan
                             file: StaticString = #file,
                             line: UInt = #line)
     {
-      var reason: String = ""
+      var reason = ""
       switch result()
       {
         case VK_SUCCESS:
@@ -124,7 +124,7 @@ public extension Vulkan
         default:
           reason = "An unknown error occurred"
       }
-    
+
       print("error:", "\(reason).")
       fatalError("in \(file) at line \(line).")
     }

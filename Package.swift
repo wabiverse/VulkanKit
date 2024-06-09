@@ -71,6 +71,11 @@ let package = Package(
         .target(name: "vulkan"),
         .target(name: "libktx")
       ],
+      cxxSettings: [
+        .define("VK_ENABLE_BETA_EXTENSIONS", to: "1"),
+        .define("VK_USE_PLATFORM_METAL_EXT", to: "1", .when(platforms: [.macOS])),
+        .define("VK_USE_PLATFORM_MACOS_MVK", to: "1", .when(platforms: [.macOS])),
+      ],
       swiftSettings: [
         .interoperabilityMode(.Cxx)
       ]
