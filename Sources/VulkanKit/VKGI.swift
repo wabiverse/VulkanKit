@@ -358,30 +358,35 @@ public extension Vulkan
 
     public func mouseDragged(x: CGFloat, y: CGFloat)
     {
-      let dx = mouseState.position.x - Float(x);
-      let dy = mouseState.position.y - Float(y);
+      let dx = mouseState.position.x - Float(x)
+      let dy = mouseState.position.y - Float(y)
 
       let handled = false
 
-      if (settings.overlay) {
+      if settings.overlay
+      {
         // ImGuiIO& io = ImGui::GetIO();
         // handled = io.WantCaptureMouse && ui.visible;
       }
 
-      if (handled) {
-        mouseState.position = SIMD2<Float>(Float(x), Float(y));
-        return;
+      if handled
+      {
+        mouseState.position = SIMD2<Float>(Float(x), Float(y))
+        return
       }
 
-      if (mouseState.buttons.left) {
+      if mouseState.buttons.left
+      {
         camera.rotate(SIMD3<Float>(dy * camera.rotationSpeed, -dx * camera.rotationSpeed, 0.0))
         viewUpdated = true
       }
-      if (mouseState.buttons.right) {
+      if mouseState.buttons.right
+      {
         camera.translate(SIMD3<Float>(-0.0, 0.0, dy * 0.005))
         viewUpdated = true
       }
-      if (mouseState.buttons.middle) {
+      if mouseState.buttons.middle
+      {
         camera.translate(SIMD3<Float>(-dx * 0.005, -dy * 0.005, 0.0))
         viewUpdated = true
       }
@@ -413,17 +418,17 @@ extension Vulkan.GI
 
 public extension Vulkan.GI
 {
-	struct Settings 
+  struct Settings
   {
-		/** activates validation layers (and message output) when set to true. */
-		public var validation: Bool = false
-		/** set to true if fullscreen mode has been requested via command line. */
-		public var fullscreen: Bool = false
-		/** set to true if v-sync will be forced for the swapchain. */
-		public var vsync: Bool = false
-		/** enable UI overlay. */
-		public var overlay: Bool = true
-	}
+    /** activates validation layers (and message output) when set to true. */
+    public var validation: Bool = false
+    /** set to true if fullscreen mode has been requested via command line. */
+    public var fullscreen: Bool = false
+    /** set to true if v-sync will be forced for the swapchain. */
+    public var vsync: Bool = false
+    /** enable UI overlay. */
+    public var overlay: Bool = true
+  }
 
   struct MouseState
   {
@@ -571,7 +576,7 @@ public class View: NSView, NSWindowDelegate
     fatalError("init(coder:) has not been implemented")
   }
 
-  public override func viewDidMoveToWindow()
+  override public func viewDidMoveToWindow()
   {
     CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
     if let displayLink
@@ -580,12 +585,12 @@ public class View: NSView, NSWindowDelegate
     }
   }
 
-  public override var acceptsFirstResponder: Bool
+  override public var acceptsFirstResponder: Bool
   {
     true
   }
 
-  public override func acceptsFirstMouse(for _: NSEvent?) -> Bool
+  override public func acceptsFirstMouse(for _: NSEvent?) -> Bool
   {
     true
   }
@@ -730,9 +735,9 @@ public class View: NSView, NSWindowDelegate
   }
 }
 
-extension Vulkan.GI
+public extension Vulkan.GI
 {
-  public func setupWindow()
+  func setupWindow()
   {
     NSApp = NSApplication.shared
     NSApp.setActivationPolicy(.regular)
@@ -764,7 +769,63 @@ extension Vulkan.GI
     nsView.vgi = self
     window.delegate = nsView
     window.contentView = nsView
-    self.view = nsView
+    view = nsView
     metalLayer = nsView.layer as? CAMetalLayer
   }
+}
+
+public extension Vulkan.GI
+{
+  func prepare()
+  {
+    // initSwapchain()
+    // createCommandPool()
+    // setupSwapChain()
+    // createCommandBuffers()
+    // createSynchronizationPrimitives()
+    // setupDepthStencil()
+    // setupRenderPass()
+    // createPipelineCache()
+    // setupFrameBuffer()
+    #if WITH_BENCHMARKS
+      settings.overlay = settings.overlay && (!benchmark.active)
+    #endif
+
+    do
+    {
+      try Vulkan.GLSLC.compile(shaderPath: "\(Bundle.resources)/uioverlay.vert")
+      try Vulkan.GLSLC.compile(shaderPath: "\(Bundle.resources)/uioverlay.frag")
+    }
+    catch
+    {
+      print("error: failed to compile shader.")
+    }
+
+    // if settings.overlay
+    // {
+    //   ui.device = vulkanDevice
+    //   ui.queue = queue
+    //   ui.shaders = [
+    //     loadShader("\(Bundle.resources)/uioverlay.vert", VK_SHADER_STAGE_VERTEX_BIT),
+    //     loadShader("\(Bundle.resources)/uioverlay.frag", VK_SHADER_STAGE_FRAGMENT_BIT),
+    //   ]
+    //   ui.prepareResources()
+    //   ui.preparePipeline(pipelineCache, renderPass, swapChain.colorFormat, depthFormat)
+    // }
+  }
+}
+
+public extension Bundle
+{
+  static let kitRoot = Bundle.main.resourcePath ?? ""
+
+  #if os(macOS) || os(visionOS) || os(iOS) || os(tvOS) || os(watchOS)
+    static let ext = ".bundle"
+  #else
+    static let ext = ".resources"
+  #endif
+
+  /**
+   * Where application bundle resources are located. */
+  static let resources = Bundle(path: "\(kitRoot)/VulkanKit_VulkanKit\(ext)")?.resourcePath ?? "./"
 }

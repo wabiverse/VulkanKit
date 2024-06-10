@@ -52,7 +52,7 @@ enum VulkanKitDemo
       print("")
       print("success: setup window.")
 
-      // vgi.prepare()
+      vgi.prepare()
       // vgi.renderLoop()
     }
     else

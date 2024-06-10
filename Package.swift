@@ -72,6 +72,9 @@ let package = Package(
         .target(name: "glm"),
         .target(name: "libktx")
       ],
+      resources: [
+        .process("Resources")
+      ],
       cxxSettings: [
         .define("VK_ENABLE_BETA_EXTENSIONS", to: "1"),
         .define("VK_USE_PLATFORM_METAL_EXT", to: "1", .when(platforms: [.macOS])),
