@@ -3,6 +3,8 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
+#include <chrono>
+#include <ratio>
 
 /* ---------------------------------------- */
 
@@ -21,7 +23,40 @@ using VkVertexInputAttributeDescriptionVec = std::vector<VkVertexInputAttributeD
 using VkDynamicStateVec = std::vector<VkDynamicState>;
 using VkSpecializationMapEntryVec = std::vector<VkSpecializationMapEntry>;
 using VkBufferImageCopyVec = std::vector<VkBufferImageCopy>;
-using VkExtensionPropertiesVec = std::vector<VkExtensionProperties>;
+
+/* ---------------------------------------- */
+
+/**
+ * Wabi Standard Library
+ * These functions are used to extend the
+ * standard library with some additional
+ * template specializations and functions
+ * for use with swift. */
+
+/* ---------------------------------------- */
+
+namespace wabi
+{
+  using namespace std;
+
+  namespace std
+  {
+    using milliseconds = chrono::duration<double, milli>;
+
+    milliseconds duration(const chrono::nanoseconds &__d)
+    {
+      return chrono::duration<double, milli>(__d);
+    }
+
+    chrono::nanoseconds operator-(
+      const chrono::steady_clock::time_point &__t1, 
+      const chrono::steady_clock::time_point &__t2
+    )
+    {
+      return __t1 - __t2;
+    }
+  } /* namespace wabi.std */
+} /* namespace wabi */
 
 /* ---------------------------------------- */
 

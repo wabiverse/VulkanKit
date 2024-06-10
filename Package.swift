@@ -69,6 +69,7 @@ let package = Package(
       name: "VulkanKit",
       dependencies: [
         .target(name: "vulkan"),
+        .target(name: "glm"),
         .target(name: "libktx")
       ],
       cxxSettings: [

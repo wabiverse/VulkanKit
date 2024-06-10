@@ -46,7 +46,12 @@ enum VulkanKitDemo
     {
       print("")
       print("success: initialized vulkan.")
-      // vgi.setupWindow(nil)
+
+      vgi.setupWindow()
+
+      print("")
+      print("success: setup window.")
+
       // vgi.prepare()
       // vgi.renderLoop()
     }

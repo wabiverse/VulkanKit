@@ -28,11 +28,79 @@
  *  . x x x . o o o . x x x . : : : .    o  x  o    . : : : .
  * ---------------------------------------------------------------- */
 
+import AppKit
+import CxxStdlib
 import Foundation
+import glm
+import simd
 import vulkan
 
 public extension Vulkan
 {
+  class Camera
+  {
+    public var position: SIMD3<Float> = .init(0.0, 0.0, 0.0)
+    public var rotation: SIMD3<Float> = .init(0.0, 0.0, 0.0)
+    public var rotationSpeed: Float = 0.25
+    public var movementSpeed: Float = 1.0
+    public var keys: Keys = .init()
+
+    public struct Keys
+    {
+      public var left = false
+      public var right = false
+      public var up = false
+      public var down = false
+    }
+
+    public init()
+    {}
+
+    public func translate(_ delta: SIMD3<Float>)
+    {
+      position += delta
+    }
+
+    public func rotate(_ delta: SIMD3<Float>)
+    {
+      rotation += delta
+    }
+
+    public func update(_ delta: Float)
+    {
+      if keys.up
+      {
+        translate(SIMD3<Float>(0.0, 0.0, -movementSpeed * delta))
+      }
+      if keys.down
+      {
+        translate(SIMD3<Float>(0.0, 0.0, movementSpeed * delta))
+      }
+      if keys.left
+      {
+        translate(SIMD3<Float>(-movementSpeed * delta, 0.0, 0.0))
+      }
+      if keys.right
+      {
+        translate(SIMD3<Float>(movementSpeed * delta, 0.0, 0.0))
+      }
+    }
+
+    public func moving() -> Bool
+    {
+      keys.up || keys.down || keys.left || keys.right
+    }
+  }
+
+  class UI
+  {
+    public var visible: Bool = true
+    public var updated: Bool = true
+
+    public init()
+    {}
+  }
+
   class GI
   {
     public var title = "Vulkan Graphics Interface"
@@ -48,8 +116,23 @@ public extension Vulkan
 
     public var vulkanDevice: Vulkan.Device?
 
+    public var view: View?
+    public var metalLayer: CAMetalLayer?
+
+    public var settings: Settings = .init()
+    public var mouseState = MouseState()
+    public var ui: Vulkan.UI = .init()
+    public var camera: Vulkan.Camera = .init()
+
     private var frameCounter: Int = 0
     private var lastFPS: Int = 0
+    private var lastTimestamp = std.chrono.steady_clock.time_point()
+    private var tPrevEnd = std.chrono.steady_clock.time_point()
+
+    /// For use in animations, rotations, etc.
+    private var timer: Float = 0.0
+    /// Multiplier for speeding up (or slowing down) the global timer
+    private var timerSpeed: Float = 0.25
 
     private var instance: VkInstance?
     private var supportedExtensions: [String] = []
@@ -94,6 +177,9 @@ public extension Vulkan
     private var waitFences: [VkFence] = []
 
     private var requiresStencil: Bool = false
+
+    public var paused: Bool = false
+    public var quit: Bool = false
 
     public init()
     {}
@@ -266,6 +352,41 @@ public extension Vulkan
 
       return true
     }
+
+    public func keyPressed(_: UInt16)
+    {}
+
+    public func mouseDragged(x: CGFloat, y: CGFloat)
+    {
+      let dx = mouseState.position.x - Float(x);
+      let dy = mouseState.position.y - Float(y);
+
+      let handled = false
+
+      if (settings.overlay) {
+        // ImGuiIO& io = ImGui::GetIO();
+        // handled = io.WantCaptureMouse && ui.visible;
+      }
+
+      if (handled) {
+        mouseState.position = SIMD2<Float>(Float(x), Float(y));
+        return;
+      }
+
+      if (mouseState.buttons.left) {
+        camera.rotate(SIMD3<Float>(dy * camera.rotationSpeed, -dx * camera.rotationSpeed, 0.0))
+        viewUpdated = true
+      }
+      if (mouseState.buttons.right) {
+        camera.translate(SIMD3<Float>(-0.0, 0.0, dy * 0.005))
+        viewUpdated = true
+      }
+      if (mouseState.buttons.middle) {
+        camera.translate(SIMD3<Float>(-dx * 0.005, -dy * 0.005, 0.0))
+        viewUpdated = true
+      }
+      mouseState.position = SIMD2<Float>(Float(x), Float(y))
+    }
   }
 }
 
@@ -287,5 +408,363 @@ extension Vulkan.GI
     createApp.ppEnabledExtensionNames = extensions
 
     return vkCreateInstance(&createApp, nil, &instance)
+  }
+}
+
+public extension Vulkan.GI
+{
+	struct Settings 
+  {
+		/** activates validation layers (and message output) when set to true. */
+		public var validation: Bool = false
+		/** set to true if fullscreen mode has been requested via command line. */
+		public var fullscreen: Bool = false
+		/** set to true if v-sync will be forced for the swapchain. */
+		public var vsync: Bool = false
+		/** enable UI overlay. */
+		public var overlay: Bool = true
+	}
+
+  struct MouseState
+  {
+    public struct Buttons
+    {
+      public var left: Bool = false
+      public var right: Bool = false
+      public var middle: Bool = false
+    }
+
+    public var buttons: Buttons = .init()
+    public var position: SIMD2<Float> = .init(0.0, 0.0)
+  }
+}
+
+public extension Vulkan.GI
+{
+  func displayLinkOutputCb()
+  {
+    #if WITH_BENCHMARKS
+      if benchmark.active
+      {
+        benchmark.run({ render() }, vulkanDevice.properties)
+        if !benchmark.filename.isEmpty
+        {
+          benchmark.saveResults()
+        }
+        quit = true
+        return
+      }
+    #endif /* WITH_BENCHMARKS */
+
+    if prepared
+    {
+      nextFrame()
+    }
+  }
+}
+
+public extension Vulkan.GI
+{
+  func nextFrame()
+  {
+    if viewUpdated
+    {
+      viewUpdated = false
+    }
+
+    // render()
+    frameCounter += 1
+    let tEnd = std.chrono.high_resolution_clock.now()
+    #if os(macOS)
+      let tDiff = Float(wabi.std.duration(tEnd - tPrevEnd).count())
+    #endif
+    frameTimer = tDiff / 1000.0
+    camera.update(frameTimer)
+    if camera.moving()
+    {
+      viewUpdated = true
+    }
+    // convert to clamped timer value
+    if !paused
+    {
+      timer += timerSpeed * frameTimer
+      if timer > 1.0
+      {
+        timer -= 1.0
+      }
+    }
+    let fpsTimer = Float(wabi.std.duration(tEnd - lastTimestamp).count())
+    if fpsTimer > 1000.0
+    {
+      lastFPS = frameCounter * Int(Float(1000.0) / fpsTimer)
+      frameCounter = 0
+      lastTimestamp = tEnd
+    }
+    tPrevEnd = tEnd
+
+    // updateOverlay()
+  }
+}
+
+class AppDelegate: NSObject, NSApplicationDelegate
+{
+  var vgi: Vulkan.GI = .init()
+  var concurrentGroup: DispatchGroup = .init()
+
+  func applicationDidFinishLaunching(_: Notification)
+  {
+    NSApp.activate(ignoringOtherApps: true)
+
+    concurrentGroup = DispatchGroup()
+    DispatchQueue.global(qos: .userInteractive).async(group: concurrentGroup)
+    {
+      while !self.vgi.quit
+      {
+        self.vgi.displayLinkOutputCb()
+      }
+    }
+
+    #if WITH_BENCHMARKS
+      if vgi.benchmark.active
+      {
+        let notifyQueue = DispatchQueue.main
+        DispatchGroup().notify(queue: notifyQueue)
+        {
+          NSApp.terminate(nil)
+        }
+      }
+    #endif /* WITH_BENCHMARKS */
+  }
+
+  func applicationShouldTerminateAfterLastWindowClosed(_: NSApplication) -> Bool
+  {
+    true
+  }
+
+  func applicationWillTerminate(_: Notification)
+  {
+    vgi.quit = true
+    concurrentGroup.wait()
+    if let device = vgi.vulkanDevice?.logicalDevice
+    {
+      vkDeviceWaitIdle(device)
+    }
+    // delete(vgi)
+  }
+}
+
+public class View: NSView, NSWindowDelegate
+{
+  var vgi: Vulkan.GI = .init()
+  var displayLink: CVDisplayLink?
+
+  override init(frame: NSRect)
+  {
+    super.init(frame: frame)
+    wantsLayer = true
+    layer = CAMetalLayer()
+  }
+
+  @available(*, unavailable)
+  required init?(coder _: NSCoder)
+  {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  public override func viewDidMoveToWindow()
+  {
+    CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
+    if let displayLink
+    {
+      CVDisplayLinkStart(displayLink)
+    }
+  }
+
+  public override var acceptsFirstResponder: Bool
+  {
+    true
+  }
+
+  public override func acceptsFirstMouse(for _: NSEvent?) -> Bool
+  {
+    true
+  }
+
+  func keyDown(event: NSEvent)
+  {
+    switch event.characters
+    {
+      case "p":
+        vgi.paused = !vgi.paused
+      case "1", "f1":
+        vgi.ui.visible = !vgi.ui.visible
+        vgi.ui.updated = true
+      case "delete", "escape":
+        NSApp.terminate(nil)
+      case "w":
+        vgi.camera.keys.up = true
+      case "s":
+        vgi.camera.keys.down = true
+      case "a":
+        vgi.camera.keys.left = true
+      case "d":
+        vgi.camera.keys.right = true
+      default:
+        vgi.keyPressed(event.keyCode)
+    }
+  }
+
+  func keyUp(event: NSEvent)
+  {
+    switch event.characters
+    {
+      case "w":
+        vgi.camera.keys.up = false
+      case "s":
+        vgi.camera.keys.down = false
+      case "a":
+        vgi.camera.keys.left = false
+      case "d":
+        vgi.camera.keys.right = false
+      default:
+        break
+    }
+  }
+
+  func getMouseLocalPoint(event: NSEvent) -> NSPoint
+  {
+    let location = event.locationInWindow
+    var point: NSPoint = convert(location, from: nil)
+    point.y = frame.size.height - point.y
+    return point
+  }
+
+  func mouseDown(event: NSEvent)
+  {
+    let point = getMouseLocalPoint(event: event)
+    vgi.mouseState.position = .init(Float(point.x), Float(point.y))
+    vgi.mouseState.buttons.left = true
+  }
+
+  func mouseUp(event _: NSEvent)
+  {
+    vgi.mouseState.buttons.left = false
+  }
+
+  func rightMouseDown(event: NSEvent)
+  {
+    let point = getMouseLocalPoint(event: event)
+    vgi.mouseState.position = .init(Float(point.x), Float(point.y))
+    vgi.mouseState.buttons.right = true
+  }
+
+  func rightMouseUp(event _: NSEvent)
+  {
+    vgi.mouseState.buttons.right = false
+  }
+
+  func otherMouseDown(event: NSEvent)
+  {
+    let point = getMouseLocalPoint(event: event)
+    vgi.mouseState.position = .init(Float(point.x), Float(point.y))
+    vgi.mouseState.buttons.middle = true
+  }
+
+  func otherMouseUp(event _: NSEvent)
+  {
+    vgi.mouseState.buttons.middle = false
+  }
+
+  func mouseDragged(event: NSEvent)
+  {
+    let point = getMouseLocalPoint(event: event)
+    vgi.mouseDragged(x: point.x, y: point.y)
+  }
+
+  func rightMouseDragged(event: NSEvent)
+  {
+    let point = getMouseLocalPoint(event: event)
+    vgi.mouseDragged(x: point.x, y: point.y)
+  }
+
+  func otherMouseDragged(event: NSEvent)
+  {
+    let point = getMouseLocalPoint(event: event)
+    vgi.mouseDragged(x: point.x, y: point.y)
+  }
+
+  func mouseMoved(event: NSEvent)
+  {
+    let point = getMouseLocalPoint(event: event)
+    vgi.mouseDragged(x: point.x, y: point.y)
+  }
+
+  func scrollWheel(event: NSEvent)
+  {
+    let wheelDelta = event.deltaY
+    vgi.camera.translate(.init(0.0, 0.0, -(Float(wheelDelta) * 0.05 * vgi.camera.movementSpeed)))
+    vgi.viewUpdated = true
+  }
+
+  public func windowWillEnterFullScreen(_: Notification)
+  {
+    vgi.settings.fullscreen = true
+  }
+
+  public func windowWillExitFullScreen(_: Notification)
+  {
+    vgi.settings.fullscreen = false
+  }
+
+  public func windowShouldClose(_: NSWindow) -> Bool
+  {
+    true
+  }
+
+  public func windowWillClose(_: Notification)
+  {
+    if let displayLink
+    {
+      CVDisplayLinkStop(displayLink)
+    }
+  }
+}
+
+extension Vulkan.GI
+{
+  public func setupWindow()
+  {
+    NSApp = NSApplication.shared
+    NSApp.setActivationPolicy(.regular)
+
+    let appDelegate = AppDelegate()
+    appDelegate.vgi = self
+    NSApp.delegate = appDelegate
+
+    let contentRect = NSMakeRect(0.0, 0.0, CGFloat(width), CGFloat(height))
+    let styleMask: NSWindow.StyleMask = [.titled, .closable, .resizable]
+
+    let window = NSWindow(
+      contentRect: contentRect,
+      styleMask: styleMask,
+      backing: .buffered,
+      defer: false
+    )
+
+    window.title = title
+    window.acceptsMouseMovedEvents = true
+    window.center()
+    window.makeKeyAndOrderFront(nil)
+    if settings.fullscreen
+    {
+      window.toggleFullScreen(nil)
+    }
+
+    let nsView = View(frame: contentRect)
+    nsView.vgi = self
+    window.delegate = nsView
+    window.contentView = nsView
+    self.view = nsView
+    metalLayer = nsView.layer as? CAMetalLayer
   }
 }
