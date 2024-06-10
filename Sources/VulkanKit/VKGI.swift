@@ -109,8 +109,8 @@ public extension Vulkan
     public var prepared: Bool = false
     public var resized: Bool = false
     public var viewUpdated: Bool = false
-    public var width: Int = 0
-    public var height: Int = 0
+    public var width: Int = 1920
+    public var height: Int = 1080
 
     public var frameTimer: Float = 1.0
 
